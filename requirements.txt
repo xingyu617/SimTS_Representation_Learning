@@ -11,4 +11,4 @@ seaborn >= 0.12.2
 torchinfo >= 0.0.1
 tqdm >= 4.64.1
 tsaug >= 0.2.1
-torch >= 1.9.0
+torch >= 2.0.0

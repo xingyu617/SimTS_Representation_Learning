@@ -8,6 +8,7 @@ import random
 from models.augmentation import *
 from models.dilation import *
 from models.encoder import *
+from models.loss import *
 
 
 # helper functions
@@ -106,6 +107,7 @@ class SimTS:
         lr=0.001,
         batch_size=16,
         max_train_length=None,
+        hierarchical_loss: bool = False,
         temporal_unit=0,
         after_iter_callback=None,
         after_epoch_callback=None,
@@ -122,6 +124,7 @@ class SimTS:
             lr (int): The learning rate.
             batch_size (int): The batch size.
             max_train_length (Union[int, NoneType]): The maximum allowed sequence length for training. For sequence with a length greater than <max_train_length>, it would be cropped into some sequences, each of which has a length less than <max_train_length>.
+            hierarchical_loss (bool): Whether to use hierarchical loss.
             temporal_unit (int): The minimum unit to perform temporal contrast. When training on a very long sequence, this param helps to reduce the cost of time and memory.
             after_iter_callback (Union[Callable, NoneType]): A callback function that would be called after each iteration.
             after_epoch_callback (Union[Callable, NoneType]): A callback function that would be called after each epoch.
@@ -152,8 +155,11 @@ class SimTS:
         
         self.dropout = torch.nn.Dropout(p=0.9, inplace=False)
         self.predictor =LinearPred(output_dims,1,output_dims, self.timestep)
-        
-        self.loss  = nn.CosineSimilarity(dim=1).to(self.device)
+
+        if hierarchical_loss == True:
+            self.loss = hierarchical_cosine_loss
+        else:
+            self.loss = cosine_loss
      
     @torch.no_grad()
     def _momentum_update_key_encoder(self):
@@ -163,7 +169,7 @@ class SimTS:
         for param_q, param_k in zip(self.net.parameters(), self.net2.parameters()):
             param_k.data = param_k.data * 0.9 + param_q.data * (1 - 0.9)
     
-    def fit(self, train_data, pert_data, n_epochs=None, n_iters=None, verbose=False):
+    def fit(self, train_data, n_epochs=None, n_iters=None, verbose=False):
         ''' Training the SimTS model.
         
         Args:
@@ -251,16 +257,10 @@ class SimTS:
                 # print(rand_idx)
                 
                 # TODO
-                encode_samples1 = z2.to(self.device) # no-gradient
-                pred1 = self.predictor(trend1.unsqueeze(-1))
-                
-               
-                nce = 0
-                for i in np.arange(0, self.timestep): 
-                    nce +=self.loss(encode_samples1[:,i,:],pred1[:,i,:]).mean()
-  
-                nce /= -1.*self.timestep*1
-                loss = nce
+                encode_future_embeds = z2.to(self.device) # no-gradient
+                fcst_future_embeds = self.predictor(trend1.unsqueeze(-1))
+
+                loss = self.loss(encode_future_embeds, fcst_future_embeds)
 
                 loss.backward()
                 optimizer.step()
