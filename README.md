@@ -14,7 +14,7 @@ This is a PyTorch implementation of the paper [SimTS: Rethinking Contrastive Rep
 }
 ```
 # News
-* Apr 19, 2023: Added hierarchical temporal loss from [TS2Vec](https://arxiv.org/abs/2106.10466) by [Alexander März](https://github.com/StatMixedML). Thanks, Alexander :tada: ! 
+* Apr 19, 2023: Added hierarchical temporal loss from [TS2Vec](https://arxiv.org/abs/2106.10466). Many thanks to [Alexander März](https://github.com/StatMixedML)! 
 * Apr 11, 2023: Released codes for SimTS.
 
 <details>
@@ -27,3 +27,12 @@ This is a PyTorch implementation of the paper [SimTS: Rethinking Contrastive Rep
 </details>
 <br></br>
 
+# Setup
+## Dependencies
+A list of dependencies is provided in ```requirements.txt```. After creating a virtual environment, we recommend installing dependencies via ```pip```:
+
+```shell
+pip install -r /path/to/requirements.txt
+```
+## Dataset
+Benchmark datasets can be downloaded [here](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy?usp=sharing).
