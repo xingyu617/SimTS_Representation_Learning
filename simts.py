@@ -160,14 +160,7 @@ class SimTS:
             self.loss = hierarchical_cosine_loss
         else:
             self.loss = cosine_loss
-     
-    @torch.no_grad()
-    def _momentum_update_key_encoder(self):
-        """
-        Momentum update for key encoder
-        """
-        for param_q, param_k in zip(self.net.parameters(), self.net2.parameters()):
-            param_k.data = param_k.data * 0.9 + param_q.data * (1 - 0.9)
+
     
     def fit(self, train_data, n_epochs=None, n_iters=None, verbose=False):
         ''' Training the SimTS model.
