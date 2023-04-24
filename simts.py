@@ -200,10 +200,12 @@ class SimTS:
                 
         train_data = train_data[~np.isnan(train_data).all(axis=2).all(axis=1)]
         
-        multiplier = 1 if train_data.shape[0] >= self.batch_size else math.ceil(self.batch_size / train_data.shape[0])
+        # multiplier = 1 if train_data.shape[0] >= self.batch_size else math.ceil(self.batch_size / train_data.shape[0])
 
-        train_dataset = PretrainDataset(torch.from_numpy(train_data).to(torch.float), sigma=0.5, multiplier=multiplier)
-        # train_dataset = TensorDataset(torch.from_numpy(train_data).to(torch.float))
+        # PretrainDataset to transform the time series data with jittering, scaling, and shifting (https://openreview.net/forum?id=PilZY3omXV2).
+        # from https://github.com/salesforce/CoST/blob/afc26aa0239470f522135f470861a1c375507e84/cost.py#L17
+        # train_dataset = PretrainDataset(torch.from_numpy(train_data).to(torch.float), sigma=0.5, multiplier=multiplier)
+        train_dataset = TensorDataset(torch.from_numpy(train_data).to(torch.float))
         train_loader = DataLoader(train_dataset, batch_size=min(self.batch_size, len(train_dataset)), shuffle=True, drop_last=True)
 
         optimizer = torch.optim.SGD([
