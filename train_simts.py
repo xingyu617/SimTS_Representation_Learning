@@ -65,7 +65,6 @@ if __name__ == '__main__':
         task_type = 'classification'
         train_data, train_labels, test_data, test_labels = datautils.load_UCR(args.dataset)
         
-        
     elif args.loader == 'UEA':
         task_type = 'classification'
         train_data, train_labels, test_data, test_labels = datautils.load_UEA(args.dataset)
@@ -89,16 +88,6 @@ if __name__ == '__main__':
         task_type = 'forecasting'
         data, train_slice, valid_slice, test_slice, scaler, pred_lens, n_covariate_cols = datautils.load_forecast_npy(args.dataset, univar=True)
         train_data = data[:, train_slice]
-        
-    elif args.loader == 'anomaly':
-        task_type = 'anomaly_detection'
-        all_train_data, all_train_labels, all_train_timestamps, all_test_data, all_test_labels, all_test_timestamps, delay = datautils.load_anomaly(args.dataset)
-        train_data = datautils.gen_ano_train_data(all_train_data)
-        
-    elif args.loader == 'anomaly_coldstart':
-        task_type = 'anomaly_detection_coldstart'
-        all_train_data, all_train_labels, all_train_timestamps, all_test_data, all_test_labels, all_test_timestamps, delay = datautils.load_anomaly(args.dataset)
-        train_data, _, _, _ = datautils.load_UCR('FordA')
         
     else:
         raise ValueError(f"Unknown loader {args.loader}.")
@@ -158,11 +147,6 @@ if __name__ == '__main__':
             joblib.dump(clf, f'{run_dir}/svm.pkl')
         elif task_type == 'forecasting':
             out, eval_res = tasks.eval_forecasting(model, data, train_slice, valid_slice, test_slice, scaler, pred_lens, n_covariate_cols)
-            
-        elif task_type == 'anomaly_detection':
-            out, eval_res = tasks.eval_anomaly_detection(model, all_train_data, all_train_labels, all_train_timestamps, all_test_data, all_test_labels, all_test_timestamps, delay)
-        elif task_type == 'anomaly_detection_coldstart':
-            out, eval_res = tasks.eval_anomaly_detection_coldstart(model, all_train_data, all_train_labels, all_train_timestamps, all_test_data, all_test_labels, all_test_timestamps, delay)
         else:
             assert False
         pkl_save(f'{run_dir}/out.pkl', out)
